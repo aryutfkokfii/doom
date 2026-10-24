@@ -33,8 +33,25 @@
       if (f.name.toLowerCase().endsWith(".zip")) {
         const zip = await JSZip.loadAsync(f);
         const exe = document.getElementById("exe").value.trim();
-        zip.file(".jsdos/dosbox.conf",
-`[autoexec]
+               zip.file(".jsdos/dosbox.conf",
+`[mixer]
+rate=44100
+blocksize=2048
+prebuffer=40
+
+[sblaster]
+sbtype=sb16
+sbbase=220
+irq=7
+dma=1
+hdma=5
+sbmixer=true
+oplmode=opl3
+oplemu=nuked
+oplrate=44100
+
+[autoexec]
+SET BLASTER=A220 I7 D1 H5 T6
 mount c .
 c:
 ${exe}

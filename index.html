@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://v8.js-dos.com/latest/js-dos.css">
+  <script src="https://v8.js-dos.com/latest/js-dos.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    body { margin:0; font-family:sans-serif; }
+    #bar { padding:8px; background:#222; color:#eee; font-size:14px; }
+    #dos { width:100%; height:calc(100vh - 56px); display:none; }
+  </style>
+</head>
+<body>
+  <div id="bar">
+    ZIPファイルを選択：
+    <input type="file" id="file" accept=".zip,.jsdos">
+    起動するEXE名：<input id="exe" value="DOOM.EXE" size="12">
+  </div>
+  <div id="dos"></div>
+
+  <script>
+    const dosEl = document.getElementById("dos");
+    let started = false;
+
+    document.getElementById("file").addEventListener("change", async (e) => {
+      const f = e.target.files[0];
+      if (!f || started) return;
+      started = true;
+
+      let blob = f;
+      if (f.name.toLowerCase().endsWith(".zip")) {
+        const zip = await JSZip.loadAsync(f);
+        const exe = document.getElementById("exe").value.trim();
+        zip.file(".jsdos/dosbox.conf",
+`[autoexec]
+mount c .
+c:
+${exe}
+`);
+        blob = await zip.generateAsync({ type: "blob" });
+      }
+
+      dosEl.style.display = "block";
+      Dos(dosEl, { url: URL.createObjectURL(blob) });
+    });
+  </script>
+</body>
+</html>

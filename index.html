@@ -33,7 +33,7 @@
       if (f.name.toLowerCase().endsWith(".zip")) {
         const zip = await JSZip.loadAsync(f);
         const exe = document.getElementById("exe").value.trim();
-               zip.file(".jsdos/dosbox.conf",
+                               zip.file(".jsdos/dosbox.conf",
 `[mixer]
 rate=44100
 blocksize=2048

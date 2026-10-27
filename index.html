@@ -88,7 +88,6 @@ ${exe}
       let ci = null;
       Dos(dosEl, {
         url: URL.createObjectURL(blob),
-        ...(saved ? { initFs: saved } : {}),
         onEvent: (event, arg) => {
           if (event === "ci-ready") ci = arg;
         }

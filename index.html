@@ -89,7 +89,8 @@ ${exe}
       const saved = await loadFromIDB("doom-save");
       let ci = null;
       Dos(dosEl, {
-　　　　...(saved ? { initFs: saved } : {}),
+        url: URL.createObjectURL(blob),
+        ...(saved ? { initFs: saved } : {}),
         onEvent: (event, arg) => {
           if (event === "ci-ready") ci = arg;
         }
@@ -107,12 +108,6 @@ ${exe}
       }
       autosave();
       window.addEventListener("pagehide", () => { save().catch(() => {}); });
-      window.addEventListener("pagehide", async () => {
-        try {
-          const ci = await props.ci;
-          await saveToIDB("doom-save", await ci.persist());
-        } catch (e) {}
-      });
     });
   </script>
 </body>

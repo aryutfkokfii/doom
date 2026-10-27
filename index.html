@@ -84,17 +84,28 @@ ${exe}
         blob = await zip.generateAsync({ type: "blob" });
       }
 
-            const props = Dos(dosEl, { url: URL.createObjectURL(blob) });
+                  const saved = await loadFromIDB("doom-save");
+      const props = Dos(dosEl, {
+        url: URL.createObjectURL(blob),
+        ...(saved ? { initFs: saved } : {})
+      });
 
       // 15秒ごとにセーブを保存
-      setInterval(async () => {
+         async function autosave() {
         try {
           const ci = await props.ci;
-          const changes = await ci.persist();   // 変更されたファイル一式(Uint8Array)
+          const changes = await ci.persist();
           await saveToIDB("doom-save", changes);
         } catch (err) { console.warn("save failed", err); }
-      }, 15000);
-      Dos(dosEl, { url: URL.createObjectURL(blob) });
+        setTimeout(autosave, 3000);   // 終わってから3秒後に次
+      }
+      autosave();
+      window.addEventListener("pagehide", async () => {
+        try {
+          const ci = await props.ci;
+          await saveToIDB("doom-save", await ci.persist());
+        } catch (e) {}
+      });
     });
   </script>
 </body>

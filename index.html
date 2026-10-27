@@ -21,6 +21,31 @@
   <div id="dos"></div>
 
   <script>
+        function openDB() {
+      return new Promise((res, rej) => {
+        const r = indexedDB.open("doom-db", 1);
+        r.onupgradeneeded = () => r.result.createObjectStore("kv");
+        r.onsuccess = () => res(r.result);
+        r.onerror = () => rej(r.error);
+      });
+    }
+    async function saveToIDB(key, val) {
+      const db = await openDB();
+      return new Promise((res, rej) => {
+        const tx = db.transaction("kv", "readwrite");
+        tx.objectStore("kv").put(val, key);
+        tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+      });
+    }
+    async function loadFromIDB(key) {
+      const db = await openDB();
+      return new Promise((res, rej) => {
+        const tx = db.transaction("kv", "readonly");
+        const rq = tx.objectStore("kv").get(key);
+        rq.onsuccess = () => res(rq.result);
+        rq.onerror = () => rej(rq.error);
+      });
+    }
     const dosEl = document.getElementById("dos");
     let started = false;
 
@@ -59,7 +84,16 @@ ${exe}
         blob = await zip.generateAsync({ type: "blob" });
       }
 
-      dosEl.style.display = "block";
+            const props = Dos(dosEl, { url: URL.createObjectURL(blob) });
+
+      // 15秒ごとにセーブを保存
+      setInterval(async () => {
+        try {
+          const ci = await props.ci;
+          const changes = await ci.persist();   // 変更されたファイル一式(Uint8Array)
+          await saveToIDB("doom-save", changes);
+        } catch (err) { console.warn("save failed", err); }
+      }, 15000);
       Dos(dosEl, { url: URL.createObjectURL(blob) });
     });
   </script>

@@ -89,15 +89,16 @@ ${exe}
       const saved = await loadFromIDB("doom-save");
       let ci = null;
       Dos(dosEl, {
-        url: URL.createObjectURL(blob),
+　　　　...(saved ? { initFs: saved } : {}),
         onEvent: (event, arg) => {
           if (event === "ci-ready") ci = arg;
         }
       });
 
       async function save() {
-        if (!ci) return;
+        if (!ci) { console.log("ci not ready"); return; }
         const changes = await ci.persist();
+        console.log("persist size", changes && changes.length);
         await saveToIDB("doom-save", changes);
       }
       async function autosave() {

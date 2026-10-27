@@ -84,7 +84,9 @@ ${exe}
         blob = await zip.generateAsync({ type: "blob" });
       }
 
-                        const saved = await loadFromIDB("doom-save");
+      dosEl.style.display = "block";
+
+      const saved = await loadFromIDB("doom-save");
       let ci = null;
       Dos(dosEl, {
         url: URL.createObjectURL(blob),

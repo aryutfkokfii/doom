@@ -97,9 +97,10 @@ ${exe}
       });
 
       async function save() {
-        if (!ci) { console.log("ci not ready"); return; }
+        if (!ci) return;
         const changes = await ci.persist();
         console.log("persist size", changes && changes.length);
+        if (!changes || !changes.length) return;   // 変更なしのときは上書きしない
         await saveToIDB("doom-save", changes);
       }
       async function autosave() {

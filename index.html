@@ -84,22 +84,27 @@ ${exe}
         blob = await zip.generateAsync({ type: "blob" });
       }
 
-                  const saved = await loadFromIDB("doom-save");
-      const props = Dos(dosEl, {
+                        const saved = await loadFromIDB("doom-save");
+      let ci = null;
+      Dos(dosEl, {
         url: URL.createObjectURL(blob),
-        ...(saved ? { initFs: saved } : {})
+        ...(saved ? { initFs: saved } : {}),
+        onEvent: (event, arg) => {
+          if (event === "ci-ready") ci = arg;
+        }
       });
 
-      // 15秒ごとにセーブを保存
-         async function autosave() {
-        try {
-          const ci = await props.ci;
-          const changes = await ci.persist();
-          await saveToIDB("doom-save", changes);
-        } catch (err) { console.warn("save failed", err); }
-        setTimeout(autosave, 3000);   // 終わってから3秒後に次
+      async function save() {
+        if (!ci) return;
+        const changes = await ci.persist();
+        await saveToIDB("doom-save", changes);
+      }
+      async function autosave() {
+        try { await save(); } catch (err) { console.warn("save failed", err); }
+        setTimeout(autosave, 3000);
       }
       autosave();
+      window.addEventListener("pagehide", () => { save().catch(() => {}); });
       window.addEventListener("pagehide", async () => {
         try {
           const ci = await props.ci;
